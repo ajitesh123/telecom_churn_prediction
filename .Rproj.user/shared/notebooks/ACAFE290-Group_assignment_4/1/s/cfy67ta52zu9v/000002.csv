@@ -1,0 +1,4 @@
+"0","```r
+# use load(\"filename.Rdata\") for .Rdata files
+data = load(\"PentathlonTargeting.Rdata\")
+```"

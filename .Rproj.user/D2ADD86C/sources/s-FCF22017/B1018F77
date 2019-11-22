@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1574378565418.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "B1018F77",
+    "lastKnownWriteTime" : 1509161698832,
+    "last_content_update" : 1574378565418,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "87F5F54",
+        "caption" : "rollout_eqpdays_new",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=rollout_eqpdays_new&cache_key=87F5F54",
+        "displayedObservations" : 800,
+        "environment" : "",
+        "expression" : "rollout_eqpdays_new",
+        "object" : "rollout_eqpdays_new",
+        "preview" : 0,
+        "totalObservations" : 800,
+        "variables" : 37
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

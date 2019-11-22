@@ -1,0 +1,6 @@
+"0","```r
+average_random_alloted_pr <- rowMeans(profit_db[1,1:6]) 
+average_random_alloted_pr
+```"
+"1","[1] 0.5789654
+"

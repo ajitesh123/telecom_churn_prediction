@@ -1,0 +1,4 @@
+"0","rollout %>%"
+"0","  arrange(-eqpdays)%>%"
+"0","  slice(1:800)%>%"
+"0","  summarise(mean(eqpdays))"

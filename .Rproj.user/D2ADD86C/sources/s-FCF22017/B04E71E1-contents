@@ -1,0 +1,434 @@
+---
+title: "Group Assignment 4 - Creative Gaming"
+author:
+- Section 51
+- Gaurav Agrawal, Ajitesh Abhishek, Tarun Joshi
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+---
+
+```{r, include=FALSE}
+### Determine notebook defaults:
+knitr::opts_chunk$set(echo=TRUE,      # Print all the code in all the chunks
+                      warning=FALSE,  # Don't print warning statements
+                      message=FALSE,  # Don't print other R output messages
+                      comment=NA)     # Helps produce prettier output
+```
+
+```{r pkginit, echo=FALSE, message=FALSE}
+# Install packages needed for class
+options(install.packages.check.source = "no")
+pkgs = c('rmarkdown', 'gmodels', 'modelr', 'janitor', 'haven', 'readxl', 'knitr', 'psych', 'statar', 'tidyverse', 'devtools', 'lfe', 'Matrix')
+pkgs.installed = installed.packages()[, 'Package']
+needtoinstall = setdiff(pkgs, pkgs.installed)
+if (length(needtoinstall) > 0)
+    install.packages(needtoinstall)
+devtools::install_github("fzettelmeyer/mktg482", upgrade = "never", force = TRUE)
+
+```
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+### Load packages:
+library(gmodels)
+library(modelr)
+library(janitor)
+library(haven)
+library(readxl)
+library(knitr)
+library(psych)
+library(statar)
+library(tidyverse)
+library(mktg482)
+library(sjPlot)
+library(skimr) 
+library(nnet)
+library(tictoc)
+library(effects)
+library(splitstackshape)
+library(tools4uplift)
+library(ranger)
+```
+
+### Read in the data:
+```{r}
+# use load("filename.Rdata") for .Rdata files
+data = load("smobile_churn.Rdata")
+smobile <- smobile %>% mutate(churn = ifelse(churn == "X1", 1, 0))
+```
+
+##Question 1: Step 1
+```{r}
+data.train <- smobile %>%
+  filter(training==1)
+```
+
+```{r}
+data.test <- smobile %>%
+filter(training==0)
+```
+
+## Question 1
+
+```{r}
+fm <- formula(churn ~.  -customer)
+logit.churn <- glm(fm, family=binomial(logit), data = data.train)
+
+predictions_logit.churn <- predict(logit.churn, 
+                                   newdata = data.test, 
+                                   type = "response")
+
+data.test <- data.test %>%
+  mutate(churn_score_logit = predictions_logit.churn)
+
+gainsplot(data.test$churn_score_logit,label.var = data.test$churn)
+summary(logit.churn)
+
+```
+
+
+
+```{r}
+fm <- formula(churn ~. -customer)
+
+random.churn <- ranger(fm, data=data.train, probability = TRUE)
+
+predictions_rf.churn <- predict(random.churn, data = data.test, type="response")[[1]][,2]
+
+data.test <- data.test %>%
+  mutate(churn_score_rf = predictions_rf.churn)
+
+gainsplot(data.test$churn_score_rf,label.var = data.test$churn)
+
+```
+## Question 2
+
+![Variable Importance](foo.png)
+
+## Question 3
+
+```{r}
+plot_model(logit.churn, type="eff", terms = c("creditaa"))
+```
+Customers with high credit rating have lower churn. Hence, the firm should take extra care of cutsomers who don't high rating - offer discounts, monitor satisfaction, priority queue for customer complaint handling etc.
+
+```{r}
+plot_model(logit.churn, type="eff", terms = c("uniqsubs"))
+```
+
+```{r}
+plot_model(logit.churn, type="eff", terms = c("age"))
+```
+Launch "For Senior Citizen" plan offering expediated customer service and enrol people above age 50 years.
+
+```{r}
+plot_model(logit.churn, type="eff", terms = c("blckvce"))
+```
+Consumers usually block the spam calls. Hence, work with developer on spam detection model. Lower spam could reduce the churn for the firm. 
+
+```{r}
+plot_model(logit.churn, type="eff", terms = c("eqpdays"))
+```
+Tieup with equipment provider to help customer switch to new devices. Offer attractive plan to users with new devices. 
+
+
+```{r}
+plot_model(logit.churn, type="eff", terms = c("mou"))
+```
+Build tariff plan offering high minutes to each tier. Also, reduce the call rates or added incentives such as extra 4G data to customers with high monthly minutes of use. 
+
+## Question 4
+
+```{r}
+
+rollout <- rollout %>%
+  mutate(training = 1)
+
+predictions_logit.churn.rollout <- predict(logit.churn, newdata = rollout, type = "response")
+
+
+rollout <- rollout %>%
+  mutate(churn_score_logit = predictions_logit.churn.rollout)
+
+```
+
+```{r}
+
+rollout_new <- rollout %>%
+    mutate(age=age+10)
+
+churn_age_pred <- predict(logit.churn, newdata = rollout_new, type = "response")
+
+
+rollout_new  <- rollout_new  %>%
+  mutate(churn_age_pred = churn_age_pred)
+
+orig_churn <- rollout_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_age <- rollout_new %>%
+  summarise(mean(churn_age_pred)*100)
+
+change_per_age <- new_churn_age - orig_churn
+
+print(orig_churn) 
+print(new_churn_age)
+print(change_per_age)
+```
+
+```{r}
+
+rollout_new <- rollout %>%
+    mutate(creditaa = "1")
+
+churn_credit_pred <- predict(logit.churn, newdata = rollout_new, type = "response")
+
+
+rollout_new  <- rollout_new  %>%
+  mutate(churn_credit_pred = churn_credit_pred)
+
+orig_churn <- rollout_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_credit <- rollout_new %>%
+  summarise(mean(churn_credit_pred)*100)
+
+change_per_credit <- new_churn_credit - orig_churn
+
+print(orig_churn) 
+print(new_churn_credit)
+print(change_per_credit)
+```
+
+```{r}
+
+rollout_new <- rollout %>%
+    mutate(blckvce = blckvce*0.5)
+
+churn_blckvce_pred <- predict(logit.churn, newdata = rollout_new, type = "response")
+
+
+rollout_new  <- rollout_new  %>%
+  mutate(churn_blckvce_pred = churn_blckvce_pred)
+
+orig_churn <- rollout_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_blckvce <- rollout_new %>%
+  summarise(mean(churn_blckvce_pred)*100)
+
+change_per_blckvce <- new_churn_blckvce - orig_churn
+
+print(orig_churn) 
+print(new_churn_blckvce)
+print(change_per_blckvce)
+```
+
+```{r}
+
+rollout_new <- rollout %>%
+    mutate(uniqsubs = uniqsubs-1)
+
+churn_uniqsubs_pred <- predict(logit.churn, newdata = rollout_new, type = "response")
+
+
+rollout_new  <- rollout_new  %>%
+  mutate(churn_uniqsubs_pred = churn_uniqsubs_pred)
+
+orig_churn <- rollout_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_uniqsubs <- rollout_new %>%
+  summarise(mean(churn_uniqsubs_pred)*100)
+
+change_per_uniqsubs <- new_churn_uniqsubs - orig_churn
+
+print(orig_churn) 
+print(new_churn_uniqsubs)
+print(change_per_uniqsubs)
+```
+
+```{r}
+
+rollout_new <- rollout %>%
+    mutate(eqpdays = eqpdays*0.5)
+
+churn_eqpdays_pred <- predict(logit.churn, newdata = rollout_new, type = "response")
+
+
+rollout_new  <- rollout_new  %>%
+  mutate(churn_eqpdays_pred = churn_eqpdays_pred)
+
+orig_churn <- rollout_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_eqpdays <- rollout_new %>%
+  summarise(mean(churn_eqpdays_pred)*100)
+
+change_per_eqpdays <- new_churn_eqpdays - orig_churn
+
+print(orig_churn) 
+print(new_churn_eqpdays)
+print(change_per_eqpdays)
+```
+
+Impact on churn by just changing for a specific segment 
+
+```{r}
+rollout %>%
+  summarise(mean(mou))
+
+```
+
+```{r}
+
+rollout_mou_new <- rollout %>%
+  arrange(-mou)%>%
+  slice(1:800)%>%
+  mutate(mou=mou+180)
+
+churn_mou <- predict(logit.churn, newdata = rollout_mou_new, type = "response")
+
+
+rollout_mou_new  <- rollout_mou_new  %>%
+  mutate(churn_mou = churn_mou)
+
+orig_churn_mou <- rollout_mou_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_mou <- rollout_mou_new %>%
+  summarise(mean(churn_mou)*100)
+
+change_mou <- new_churn_mou - orig_churn_mou
+
+print(orig_churn_mou) 
+print(new_churn_mou)
+print(change_mou)
+```
+
+
+Changing credit rating 
+```{r}
+rollout_creditaa_new <- rollout %>%
+  filter(creditaa==0)%>%
+  mutate(creditaa="1")
+
+churn_creditaa <- predict(logit.churn, newdata = rollout_creditaa_new, type = "response")
+
+
+rollout_creditaa_new  <- rollout_creditaa_new  %>%
+  mutate(churn_creditaa = churn_creditaa)
+
+orig_churn_creditaa <- rollout_creditaa_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_creditaa <- rollout_creditaa_new %>%
+  summarise(mean(churn_creditaa)*100)
+
+change_creditaa <- new_churn_creditaa - orig_churn_creditaa
+
+print(orig_churn_creditaa) 
+print(new_churn_creditaa)
+print(change_creditaa)
+```
+
+```{r}
+avg_monthly_revenue <- rollout%>%
+  summarise(mean(revenue))
+
+avg_monthly_revenue
+```
+Change Unique Subscribers:
+```{r}
+rollout %>%
+  tabyl(uniqsubs)
+
+```
+
+```{r}
+rollout_uniqsubs_new <- rollout %>%
+  filter(uniqsubs==2)%>%
+  mutate(uniqsubs=1)
+
+churn_uniqsubs <- predict(logit.churn, newdata = rollout_uniqsubs_new, type = "response")
+
+
+rollout_uniqsubs_new  <- rollout_uniqsubs_new  %>%
+  mutate(churn_uniqsubs = churn_uniqsubs)
+
+orig_churn_uniqsubs <- rollout_uniqsubs_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_uniqsubs <- rollout_uniqsubs_new %>%
+  summarise(mean(churn_uniqsubs)*100)
+
+change_uniqsubs <- new_churn_uniqsubs - orig_churn_uniqsubs
+
+print(orig_churn_uniqsubs) 
+print(new_churn_uniqsubs)
+print(change_uniqsubs)
+```
+
+```{r}
+
+rollout_blckvce_new <- rollout %>%
+  arrange(blckvce)%>%
+  slice(1:800)%>%
+  mutate(blckvce=blckvce*0.5)
+
+churn_blckvce <- predict(logit.churn, newdata = rollout_mou_new, type = "response")
+
+
+rollout_blckvce_new  <- rollout_blckvce_new  %>%
+  mutate(churn_blckvce = churn_blckvce)
+
+orig_churn_blckvce <- rollout_blckvce_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_blckvce <- rollout_blckvce_new %>%
+  summarise(mean(churn_blckvce)*100)
+
+change_blckvce <- new_churn_blckvce - orig_churn_blckvce
+
+print(orig_churn_blckvce) 
+print(new_churn_blckvce)
+print(change_blckvce)
+```
+
+```{r}
+rollout %>%
+  arrange(-eqpdays)%>%
+  slice(1:800)%>%
+  summarise(mean(eqpdays))
+```
+
+```{r}
+rollout_eqpdays_new <- rollout %>%
+  arrange(-eqpdays)%>%
+  slice(1:800)%>%
+  mutate(eqpdays=2*365)
+
+churn_eqpdays <- predict(logit.churn, newdata = rollout_eqpdays_new, type = "response")
+
+
+rollout_eqpdays_new  <- rollout_eqpdays_new  %>%
+  mutate(churn_eqpdays = churn_eqpdays)
+
+orig_churn_eqpdays <- rollout_eqpdays_new %>%
+  summarise(mean(churn_score_logit)*100)
+
+new_churn_eqpdays <- rollout_eqpdays_new %>%
+  summarise(mean(churn_eqpdays)*100)
+
+change_eqpdays <- new_churn_eqpdays - orig_churn_eqpdays
+
+print(orig_churn_eqpdays) 
+print(new_churn_eqpdays)
+print(change_eqpdays)
+```
+
+## Question 5 
+
+Based on impact on churn, we would target spam control and subsidizing purchase of new devices for customers. These two action have significanly higher impact on churn 4.404% to 3.05% and 5.8% to 4.7% respectively. 

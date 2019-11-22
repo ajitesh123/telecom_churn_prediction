@@ -1,0 +1,5 @@
+"0","```r
+data.nptb.test <- data.nptb.test %>%
+mutate(epr.backcountry = pr.backcountry *24.99912, epr.control = pr.control*19.97782, epr.endurance = pr.endurance*22.01888, epr.racquet=pr.racquet*23.13902, epr.strength = pr.strength*22.42917, epr.team = pr.team*23.03709, epr.water = pr.water*24.95753)
+head(data.nptb.test)
+```"

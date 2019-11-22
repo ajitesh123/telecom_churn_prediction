@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1574293597421.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "B04E71E1",
+    "lastKnownWriteTime" : 1574380836,
+    "last_content_update" : 1574380836914,
+    "path" : "D:/Fall 2019/Customer Analytics/Group Assignment 5/Group_assignment_5.Rmd",
+    "project_path" : "Group_assignment_5.Rmd",
+    "properties" : {
+        "cursorPosition" : "260,32",
+        "scrollLine" : "251"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

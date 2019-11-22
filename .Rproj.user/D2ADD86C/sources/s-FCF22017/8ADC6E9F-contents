@@ -1,0 +1,327 @@
+---
+title: "ASSIGNMENT NAME"
+author:
+- name: Section XX
+- name: Team member 1
+- name: Team member 2
+- name: Team member 3
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+---
+
+# Preliminaries
+
+### Determine notebook defaults:
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE,      # Print all the code in all the chunks
+                      warning=FALSE,  # Don't print warning statements
+                      message=FALSE,  # Don't print other R output messages
+                      comment=NA)     # Helps produce prettier output
+```
+
+### Load packages:
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+install.packages("janitor")
+install.packages("haven")
+install.packages("readxl")
+install.packages("knitr")
+install.packages("psych")
+install.packages("statar")
+install.packages("tidyverse")
+
+library(gmodels)
+library(modelr)
+library(janitor)
+library(haven)
+library(readxl)
+library(knitr)
+library(psych)
+library(statar)
+library(tidyverse)
+```
+
+### Read in the data:
+```{r}
+# use load("filename.Rdata") for .Rdata files
+load("Tuango_rfm.Rdata")
+```
+
+# Assignment answers
+
+## Question 1 What percentage of customers responded (i.e. bought anything) after the push message?
+
+3.099% of customers who were sent a push message bought something. 
+
+```{r}
+tuango %>%
+  summarize(perc=sum(buyer)/n())
+```
+
+## Question 2 Of those who bought, what was the average spending?
+
+The average spending (ordersize) for those who bought at least 1 deal after receiving a push message was 202.3565 RMB
+
+
+```{r}
+tuango %>%
+  filter(buyer==1) %>%
+  summarize(Avg_spend = mean(ordersize))
+  
+```
+
+## Question 3 Create (independent) quintile variables for recency, frequency and monetary.Display a table with the first six observations of the quintile variables only.
+
+```{r}
+tuangoiq <- tuango %>%
+  mutate(rec_iq = ntile(recency,5) , freq_iq = ntile(-frequency,5), mon_iq = ntile(-monetary,5))
+
+head(tuangoiq,6)
+```
+
+## Question 4 Create bar chart showing the response rate (i.e., the proportion of customers who bought something) to this deal by
+##• recency quintile
+##• frequency quintile
+##• monetary quintile
+
+```{r}
+tuangoiq %>% 
+  group_by(rec_iq) %>% 
+  summarise(perc_buyer=mean(buyer)) %>% 
+  ggplot() + geom_col(aes(x = rec_iq, y = perc_buyer))
+                                    
+                                    
+```                                    
+                                    
+```{r}
+tuangoiq %>% 
+  group_by(freq_iq) %>% 
+  summarise(perc_buyer=mean(buyer)) %>% 
+  ggplot() + geom_col(aes(x = freq_iq, y = perc_buyer))
+                                    
+                                    
+```   
+                                    
+```{r}
+tuangoiq %>% 
+  group_by(mon_iq) %>% 
+  summarise(perc_buyer=mean(buyer)) %>% 
+  ggplot() + geom_col(aes(x = mon_iq, y = perc_buyer))
+                                    
+                                    
+``` 
+
+#Question 5 Repeat questions 4 using only those customers who placed an order after the push message, i.e. create bar charts showing the average spending (in RMB) by recency, frequency and monetary quintile.
+
+
+```{r}
+#Creating a Data Frame for customers who placed an order
+tuangoiq_ordered <- tuangoiq %>% 
+  filter(buyer==1) 
+
+
+```
+
+
+
+```{r}
+#Recency Quintile
+tuangoiq_ordered %>% 
+  group_by(rec_iq) %>% 
+  summarise(avg_spend=mean(ordersize)) %>% 
+  ggplot() + geom_col(aes(x = rec_iq, y = avg_spend))
+
+
+```
+
+
+```{r}
+#Frequency Quintile
+tuangoiq_ordered %>% 
+  group_by(freq_iq) %>% 
+  summarise(avg_spend=mean(ordersize)) %>% 
+  ggplot() + geom_col(aes(x = freq_iq, y = avg_spend))
+```
+
+```{r}
+#Monetary Quintile
+tuangoiq_ordered %>% 
+  group_by(mon_iq) %>% 
+  summarise(avg_spend=mean(ordersize)) %>% 
+  ggplot() + geom_col(aes(x = mon_iq, y = avg_spend))
+
+
+```
+##6. What do the above bar charts reveal about the likelihood of response and the size of the order across the different recency, frequency, and monetary quintiles?
+
+The above bar charts indicate that while % of people who bought after receiving push messages changes and increases with recency, frequecny and monetary indices, the ordersize does not and seen to be almost equal across various recency, frequency and mentary quintiles. 
+
+## Create the independent RFM index in R.
+
+```{r}
+tuangoiq <- tuangoiq %>%
+  mutate(rfmindex_iq = paste(rec_iq, freq_iq, mon_iq, sep = '')) 
+
+tuangoiq %>% 
+  select(rec_iq, freq_iq, mon_iq, rfmindex_iq) %>% 
+  head(5)
+```
+
+##8. Create the sequential RFM index in R.
+
+```{r}
+tuangoiq_seq <- tuangoiq %>% 
+  mutate(rec_iq_seq = ntile(recency, 5)) %>%
+  group_by(rec_iq_seq) %>% 
+  mutate(freq_iq_seq = ntile(-frequency, 5)) %>%
+  group_by(rec_iq_seq, freq_iq_seq) %>% 
+  mutate(mon_iq_seq = ntile(-monetary, 5)) %>% 
+  ungroup()
+
+tuangoiq_seq <- tuangoiq_seq %>%
+  mutate(rfmindex_seq = paste(rec_iq_seq, freq_iq_seq, mon_iq_seq, sep = '')) 
+
+tuangoiq_seq %>% 
+  select(rec_iq_seq, freq_iq_seq, mon_iq_seq, rfmindex_seq) %>% 
+  head(5)
+
+```
+
+##9. Visually examine the observations in the database. What do you notice about
+##the independent and sequential index values? That is - do the two approaches
+##generally yield the same RFM index for any given customer? What do you see as
+##the pros and cons of the two approaches (from a statistical as well as logical
+##perspective) and why?
+##(Hint: Calculate and compare how many consumers are in each "cell" for the
+##independent and sequential index. You can count the number of observations
+##using the dplyr summarise(n()) function.)
+
+
+
+```{r}
+#compares acceptance of offers
+
+tuangoiq_seq %>% 
+  group_by(rfmindex_seq) %>% 
+  summarise(perc_buyer=mean(buyer)) %>% 
+  ggplot() + geom_col(aes(x = rfmindex_seq, y = perc_buyer))
+
+tuangoiq %>% 
+  group_by(rfmindex_iq) %>% 
+  summarise(perc_buyer=mean(buyer)) %>% 
+  ggplot() + geom_col(aes(x = rfmindex_iq, y = perc_buyer))
+
+
+
+
+```
+
+
+
+```{r}
+#compare the count in each index type
+
+tuangoiq %>% 
+  group_by(rfmindex_iq) %>% 
+  summarise(buyer_count=n()) %>% 
+  ggplot() + geom_col(aes(x = rfmindex_iq, y = buyer_count))
+
+tuangoiq_seq %>% 
+  group_by(rfmindex_seq) %>% 
+  summarise(buyer_count=n()) %>% 
+  ggplot() + geom_col(aes(x = rfmindex_seq, y = buyer_count))
+
+```
+
+##Part III
+
+##Question 10 What is the breakeven response rate? 
+
+```{r}
+#breakevenrate calculated as cost per sale divided by revenue per sale 
+
+
+Revenue_per_sale <- tuangoiq_ordered %>% summarize ( mean( ordersize))
+Revenue_per_sale
+breakeven_rate <- 2.5/Revenue_per_sale
+breakeven_rate
+
+
+##11.What is the projected profit in RMB if you offer the deal to all remaining 264,841
+#targeting all customers
+
+cust_resp <- tuango %>% summarize (perc = mean(buyer)) * 264841
+cust_resp
+
+Profit <- Revenue_per_sale*cust_resp - 2.5*264841
+Profit
+
+ROME_All <- Profit/(2.5*264841)
+ROME_All
+
+```
+
+##12. Consider offering the deal only to those of the 264,841 customers in RFM cells
+##(using the sequential n-tiles approach) with a response rate that is equal to or
+##greater than the breakeven response rate.
+##(Hint: review the file "RFM_BBB.Rmd" which goes through the calculations in the
+##Bookbinders RFM analysis).
+##. Calculate the response rate for the sequential quintiles approach.
+##. Merge the response rate back into main data.
+##. Calculate who you should have mailed to in your data
+
+#calculate sequential repsonse rate
+
+
+
+```{r}
+resp_rate_sq_join <- tuangoiq_seq %>%
+  group_by(rfmindex_seq) %>%
+  summarise(resp_rate_sq=mean(buyer)) %>% 
+  ungroup()
+resp_rate_sq_join %>% 
+  head()
+```
+
+
+```{r}
+tuango_final <- tuangoiq_seq %>%
+  left_join(resp_rate_sq_join)
+
+```
+
+```{r}
+tuango_mailto <- tuango_final %>%
+  mutate(mailto_sq=1*(resp_rate_sq>0.0124)) %>%
+  select(rfmindex_seq, resp_rate_sq, mailto_sq)
+tuango_mailto %>% 
+  head()
+```
+
+
+```{r}
+
+#target and response rate
+tuango_mailto %>%
+  filter(mailto_sq==1) %>%
+  summarise(frac_mailed=n()/264841, resp_rate=mean(resp_rate_sq))
+```
+
+```{r}
+
+#target and response rate
+
+Fraction_resp <- 0.0312*264841*0.0488
+Fraction_resp
+
+Profit_frac <- Revenue_per_sale*Fraction_resp - 2.5 * 0.0312 * 264841
+Profit_frac
+
+ROME_Frac <- Profit_frac/(2.5 * 0.0312 * 264841)
+ROME_Frac
+
+```
+
+
+

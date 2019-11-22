@@ -1,0 +1,13 @@
+"0","```r
+data.nptb.test <- data.nptb.test %>%
+mutate(pr.max = pmax(pr.endurance, pr.team, pr.water, pr.strength, pr.racquet, pr.backcountry, pr.control),
+mail.offer = case_when(
+pr.endurance == pr.max ~ \"endurance\",
+pr.team == pr.max ~ \"team\",
+pr.water== pr.max ~ \"water\",
+pr.strength== pr.max ~ \"strength\", 
+pr.racquet== pr.max ~ \"racquet\",
+pr.backcountry== pr.max ~ \"backcountry\",
+pr.control== pr.max ~ \"control\"))
+
+```"

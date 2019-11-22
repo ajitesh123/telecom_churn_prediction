@@ -1,0 +1,2 @@
+"0","data.train <- smobile %>%"
+"0","  filter(training==1)"

@@ -1,0 +1,13 @@
+"0","```r
+data.nptb.test %>%
+tabyl(mail.offer)
+```"
+"1","  mail.offer      n      percent
+ backcountry   2313 1.285000e-02
+     control      7 3.888889e-05
+   endurance 116425 6.468056e-01
+     racquet  10430 5.794444e-02
+    strength  45938 2.552111e-01
+        team   2095 1.163889e-02
+       water   2792 1.551111e-02
+"

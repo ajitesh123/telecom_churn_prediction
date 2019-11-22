@@ -1,0 +1,45 @@
+"1","  
+  
+  
+[32mâˆš[39m  [38;5;247mchecking for file 'C:\Users\a1aji\AppData\Local\Temp\RtmpoPd1tb\remotes27302c135d37\fzettelmeyer-mktg482-ff93119/DESCRIPTION'[39m[36m[36m (500ms)[36m[39m
+
+  
+[38;5;247m-[39m[38;5;247m  [39m[38;5;247mpreparing 'mktg482':[39m[36m[39m
+[32mâˆš[39m  [38;5;247mchecking DESCRIPTION meta-information[39m[36m[39m
+
+  
+  
+  
+[38;5;247m-[39m[38;5;247m  [39m[38;5;247mchecking for LF line-endings in source and make files and shell scripts[39m[36m[36m (457ms)[36m[39m
+[38;5;247m-[39m[38;5;247m  [39m[38;5;247mchecking for empty or unneeded directories[39m[36m[39m
+[38;5;247m-[39m[38;5;247m  [39m[38;5;247mbuilding 'mktg482_0.0.3.0.tar.gz'[39m[36m[39m
+
+  
+   
+
+* installing *source* package 'mktg482' ...
+** using staged installation
+** R
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+  converting help for package 'mktg482'
+    finding HTML links ... done
+    QiniBarPlot2                            html  
+    QiniCurve2                              html  
+    gainsplot                               html  
+    get.estimable.coefficients              html  
+    getform.glmnet                          html  
+    plotimp.logistic                        html  
+    update_mktg482                          html  
+    varimp.logistic                         html  
+** building package indices
+** testing if installed package can be loaded from temporary location
+*** arch - i386
+*** arch - x64
+** testing if installed package can be loaded from final location
+*** arch - i386
+*** arch - x64
+** testing if installed package keeps a record of temporary installation path
+* DONE (mktg482)
+"

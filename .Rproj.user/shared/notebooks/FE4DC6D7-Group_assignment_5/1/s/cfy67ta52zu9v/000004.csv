@@ -1,0 +1,3 @@
+"0","# use load(""filename.Rdata"") for .Rdata files"
+"0","data = load(""smobile_churn.Rdata"")"
+"0","smobile <- smobile %>% mutate(churn = ifelse(churn == ""X1"", 1, 0))"

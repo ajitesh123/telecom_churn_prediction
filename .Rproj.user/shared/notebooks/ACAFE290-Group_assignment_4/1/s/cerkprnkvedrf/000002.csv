@@ -1,0 +1,6 @@
+"0","```r
+avg_order_db <- pent %>% filter(buyer==1)%>%
+  group_by(message)%>%
+  summarise(average_profit = mean(total_os)*0.4)
+avg_order_db
+```"

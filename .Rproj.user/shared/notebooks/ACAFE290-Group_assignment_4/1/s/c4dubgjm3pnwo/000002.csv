@@ -1,0 +1,7 @@
+"0","```r
+profit_db <-  data.nptb.test %>%
+  summarise_at(vars(epr.backcountry, epr.team, epr.water, epr.strength, epr.endurance, epr.racquet, epr.control), funs(mean))
+
+
+profit_db
+```"

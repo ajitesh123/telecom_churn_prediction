@@ -1,0 +1,6 @@
+"0","```r
+incremental_pr <- model_pr - average_random_alloted_pr
+total_pr <- incremental_pr*5000000
+Incremental_percent <- ((incremental_pr/average_random_alloted_pr)*100)
+total_pr
+```"

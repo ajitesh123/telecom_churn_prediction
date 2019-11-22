@@ -1,0 +1,6 @@
+"0","```r
+logit.water <- glm(buyer ~ age + female + income + children + freq_endurance + freq_strength + freq_water + freq_team + freq_backcountry + freq_racquet, family=binomial(logit), data = data.nptb.train %>% filter(message==\"water\")  )
+
+data.nptb.test <- data.nptb.test %>%
+mutate(pr.water = predict(logit.water, newdata = data.nptb.test, type = \"response\"))
+```"

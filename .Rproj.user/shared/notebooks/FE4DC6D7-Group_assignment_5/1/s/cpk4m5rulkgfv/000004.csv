@@ -1,0 +1,4 @@
+"0","avg_monthly_revenue <- rollout%>%"
+"0","  summarise(mean(revenue))"
+"0",""
+"0","avg_monthly_revenue"

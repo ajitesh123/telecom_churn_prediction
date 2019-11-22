@@ -1,0 +1,4 @@
+"0","```r
+data.nptb.train <- pent %>%
+filter(training==1)
+```"
